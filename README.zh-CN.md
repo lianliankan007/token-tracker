@@ -80,7 +80,8 @@ bash build_macos.sh
 产物：
 
 ```text
-dist/token-tracker
+dist/token-tracker.app
+dist/token-tracker.dmg
 ```
 
 ## 使用方法

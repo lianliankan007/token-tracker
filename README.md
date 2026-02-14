@@ -77,10 +77,11 @@ Build on macOS:
 bash build_macos.sh
 ```
 
-Output binary:
+Outputs:
 
 ```text
-dist/token-tracker
+dist/token-tracker.app
+dist/token-tracker.dmg
 ```
 
 ## Usage
