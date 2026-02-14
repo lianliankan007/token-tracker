@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-02-14
+
+### Added
+
+- macOS run script: `run_mac.sh`.
+- macOS build script: `build_macos.sh`.
+- Platform-specific dependency for macOS (`pyobjc-framework-Cocoa`).
+- Cross-platform app-data path docs in README (Windows/macOS/Linux).
+
+### Changed
+
+- Runtime app-data directory resolution is now platform-aware:
+  - Windows: `%APPDATA%\\token-tracker\\`
+  - macOS: `~/Library/Application Support/token-tracker/`
+  - Linux: `~/.local/share/token-tracker/` (or `$XDG_DATA_HOME`)
+- README/README.zh-CN now include macOS quick run/build instructions.
+
 ## [0.1.0] - 2026-02-14
 
 ### Added
