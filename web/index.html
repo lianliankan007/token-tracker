@@ -19,6 +19,11 @@
         </select>
         <button id="btnAutoScan">自动扫描</button>
       </div>
+      <div class="candidate-box">
+        <div class="candidate-title">扫描候选目录（多选）</div>
+        <select id="candidateList" multiple></select>
+        <button id="btnApplyCandidates">加入选中目录</button>
+      </div>
       <div class="path-actions">
         <button id="btnAddDir">添加目录</button>
         <button id="btnAddFile">添加文件</button>
@@ -26,11 +31,6 @@
         <button id="btnClear" class="ghost">清空</button>
       </div>
       <select id="pathList" multiple></select>
-      <div class="candidate-box">
-        <div class="candidate-title">扫描候选目录（多选）</div>
-        <select id="candidateList" multiple></select>
-        <button id="btnApplyCandidates">加入选中目录</button>
-      </div>
       <div class="main-actions">
         <button id="btnRefresh" class="primary">刷新统计</button>
       </div>
