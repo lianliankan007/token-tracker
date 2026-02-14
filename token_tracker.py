@@ -432,7 +432,12 @@ class WebApi:
 
     @staticmethod
     def _resolve_config_dir() -> Path:
-        appdata_root = Path(os.getenv("APPDATA", str(Path.home())))
+        if sys.platform == "win32":
+            appdata_root = Path(os.getenv("APPDATA", str(Path.home())))
+        elif sys.platform == "darwin":
+            appdata_root = Path.home() / "Library" / "Application Support"
+        else:
+            appdata_root = Path(os.getenv("XDG_DATA_HOME", str(Path.home() / ".local" / "share")))
         new_dir = appdata_root / "token-tracker"
         legacy_dir = appdata_root / "CodexTokenTracker"
 

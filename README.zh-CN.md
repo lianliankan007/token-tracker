@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Release](https://img.shields.io/github/v/release/lianliankan007/token-tracker?display_name=tag)](https://github.com/lianliankan007/token-tracker/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-0078D6)](https://www.microsoft.com/windows)
 
 语言: [English](./README.md) | 简体中文
 
@@ -19,12 +19,13 @@
 - 多折线图：支持总量/上传/下载同时展示
 - 悬浮提示：鼠标移动到点上显示明细
 - 一键打包：Windows 单文件 `exe`
+- 支持 macOS 本地运行与构建
 
 ## 快速开始
 
 ### 1. 环境要求
 
-- Windows 10/11
+- Windows 10/11 或 macOS 13+
 - Python 3.10+
 
 ```bat
@@ -60,6 +61,26 @@ build_exe.bat
 
 ```text
 dist\token-tracker.exe
+```
+
+### 5. macOS 运行与构建
+
+在 macOS 上运行：
+
+```bash
+bash run_mac.sh
+```
+
+在 macOS 上构建：
+
+```bash
+bash build_macos.sh
+```
+
+产物：
+
+```text
+dist/token-tracker
 ```
 
 ## 使用方法
@@ -136,10 +157,12 @@ dist\token-tracker.exe
 
 ## 本地数据目录
 
-默认路径：
+默认路径（按平台）：
 
 ```text
-%APPDATA%\token-tracker\
+Windows: %APPDATA%\token-tracker\
+macOS:   ~/Library/Application Support/token-tracker/
+Linux:   ~/.local/share/token-tracker/（或 $XDG_DATA_HOME/token-tracker/）
 ```
 
 文件：

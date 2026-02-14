@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Release](https://img.shields.io/github/v/release/lianliankan007/token-tracker?display_name=tag)](https://github.com/lianliankan007/token-tracker/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-0078D6)](https://www.microsoft.com/windows)
 
 Language: English | [简体中文](./README.zh-CN.md)
 
@@ -19,12 +19,13 @@ Current focus is Codex logs. Future releases will support additional tools like 
 - Multi-line trend chart (toggle total/input/output)
 - Hover tooltip on chart points for detailed values
 - Windows one-file `exe` packaging
+- macOS local run/build support
 
 ## Quick Start
 
 ### 1. Requirements
 
-- Windows 10/11
+- Windows 10/11 or macOS 13+
 - Python 3.10+
 
 ```bat
@@ -60,6 +61,26 @@ Output:
 
 ```text
 dist\token-tracker.exe
+```
+
+### 5. macOS Run/Build
+
+Run on macOS:
+
+```bash
+bash run_mac.sh
+```
+
+Build on macOS:
+
+```bash
+bash build_macos.sh
+```
+
+Output binary:
+
+```text
+dist/token-tracker
 ```
 
 ## Usage
@@ -134,10 +155,12 @@ Fallback fields:
 
 ## Data Storage
 
-Default directory:
+Default directory by platform:
 
 ```text
-%APPDATA%\token-tracker\
+Windows: %APPDATA%\token-tracker\
+macOS:   ~/Library/Application Support/token-tracker/
+Linux:   ~/.local/share/token-tracker/ (or $XDG_DATA_HOME/token-tracker/)
 ```
 
 Files:
