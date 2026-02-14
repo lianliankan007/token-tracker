@@ -9,7 +9,9 @@ Language: English | [简体中文](./README.zh-CN.md)
 
 `token-tracker` is a local/offline token analytics app for AI coding-assistant logs. It parses log files, aggregates daily usage, and visualizes trends in a desktop app.
 
-Current focus is Codex logs. Future releases will support additional tools like Claude Code and Cursor.
+The current version primarily supports Codex, Claude Code, and Cursor.
+
+![index.png](assets/index.png)
 
 ## Features
 
@@ -101,11 +103,12 @@ Auto scan is platform-aware (Windows/macOS/Linux) and searches each platform's c
 
 ### Source Support Matrix
 
-| Source | Auto scan | Parser support | Status |
-|---|---|---|---|
-| Codex | Yes | Yes | Stable |
-| Claude Code | Yes (best effort) | Partial (common fields) | Beta |
-| Cursor | Yes (best effort) | Partial (common fields) | Beta |
+
+| Source      | Auto scan         | Parser support          | Status |
+| ----------- | ----------------- | ----------------------- | ------ |
+| Codex       | Yes               | Yes                     | Stable |
+| Claude Code | Yes (best effort) | Partial (common fields) | Beta   |
+| Cursor      | Yes (best effort) | Partial (common fields) | Beta   |
 
 ### Codex Log Path Tutorial
 
@@ -201,4 +204,3 @@ Files:
 ## Contributing
 
 Issues and PRs are welcome.
-

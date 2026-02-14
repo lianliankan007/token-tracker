@@ -9,9 +9,11 @@
 
 `token-tracker` 是一个本地离线 Token 统计工具，用于分析 AI 编码助手日志，并按天展示 token 趋势。
 
-当前版本重点支持 Codex 日志；后续会扩展到 Claude Code、Cursor 等工具。
+当前版本重点支持 Codex 、Claude Code、Cursor 。
 
-## 功能特性
+![index.png](assets/index.png)
+
+功能特性
 
 - 多路径扫描：支持添加多个目录/文件
 - 按天聚合：总量、上传（Input）、下载（Output）
@@ -101,11 +103,12 @@ dist/token-tracker.dmg
 
 ### 来源支持状态
 
-| 来源 | 自动扫描 | 解析支持 | 状态 |
-|---|---|---|---|
-| Codex | 支持 | 支持 | 稳定 |
+
+| 来源        | 自动扫描     | 解析支持     | 状态 |
+| ----------- | ------------ | ------------ | ---- |
+| Codex       | 支持         | 支持         | 稳定 |
 | Claude Code | 支持（尽力） | 部分通用字段 | Beta |
-| Cursor | 支持（尽力） | 部分通用字段 | Beta |
+| Cursor      | 支持（尽力） | 部分通用字段 | Beta |
 
 ### Codex 添加目录/文件教程
 
@@ -133,14 +136,14 @@ dist/token-tracker.dmg
 
 ### 其他工具（预览）
 
-`token-tracker` 后续会支持 Claude Code 和 Cursor。  
+`token-tracker` 后续会支持 Claude Code 和 Cursor。
 在官方适配发布前，你也可以先定位日志并提供样例，帮助我们更快接入。
 
 #### Claude Code 日志定位
 
 可按以下方式排查：
 
-1. 查找最近更新的 `.jsonl` 文件：  
+1. 查找最近更新的 `.jsonl` 文件：
    `Get-ChildItem $env:USERPROFILE -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 50 FullName,LastWriteTime`
 2. 先进行一次 Claude Code 会话，再重复执行命令，对比新增/变更文件。
 3. 把候选目录或文件加到 `token-tracker` 里测试刷新。
@@ -153,7 +156,7 @@ dist/token-tracker.dmg
 - `%LOCALAPPDATA%`
 - `%USERPROFILE%`
 
-重点关注包含 `cursor`、`logs`、`jsonl`、会话 trace 的目录；  
+重点关注包含 `cursor`、`logs`、`jsonl`、会话 trace 的目录；
 完成一次 Cursor 编码会话后，再对比最近修改文件。
 
 如果你确认了稳定路径和字段格式，欢迎提 Issue，我们会优先做官方适配。
@@ -210,4 +213,3 @@ Linux:   ~/.local/share/token-tracker/（或 $XDG_DATA_HOME/token-tracker/）
 ## 贡献
 
 欢迎提 Issue / PR。
-
