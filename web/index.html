@@ -1,0 +1,83 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>token-tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="left-panel card">
+      <h2>日志路径</h2>
+      <div class="path-actions">
+        <button id="btnAddDir">添加目录</button>
+        <button id="btnAddFile">添加文件</button>
+        <button id="btnRemove">移除选中</button>
+        <button id="btnClear" class="ghost">清空</button>
+      </div>
+      <select id="pathList" multiple></select>
+      <div class="main-actions">
+        <button id="btnRefresh" class="primary">刷新统计</button>
+      </div>
+      <p id="status">等待刷新</p>
+    </aside>
+
+    <main class="right-panel">
+      <section class="summary-grid">
+        <article class="metric card">
+          <div class="label">总 Token</div>
+          <div id="mTotal" class="value">0</div>
+        </article>
+        <article class="metric card">
+          <div class="label">上传(Input)</div>
+          <div id="mInput" class="value">0</div>
+        </article>
+        <article class="metric card">
+          <div class="label">下载(Output)</div>
+          <div id="mOutput" class="value">0</div>
+        </article>
+        <article class="metric card">
+          <div class="label">扫描文件数</div>
+          <div id="mFiles" class="value">0</div>
+        </article>
+      </section>
+
+      <section class="chart card">
+        <div class="chart-head">
+          <h3>按天 Token 趋势</h3>
+          <div class="line-switch">
+            <label><input id="showTotal" type="checkbox" />总量</label>
+            <label><input id="showInput" type="checkbox" checked />上传(Input)</label>
+            <label><input id="showOutput" type="checkbox" checked />下载(Output)</label>
+          </div>
+        </div>
+        <div id="chartTooltip" class="chart-tooltip"></div>
+        <svg id="chartSvg" viewBox="0 0 920 320" preserveAspectRatio="none"></svg>
+      </section>
+
+      <section class="table card">
+        <h3>按天明细</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>总Token</th>
+                <th>上传(Input)</th>
+                <th>下载(Output)</th>
+                <th>缓存Input</th>
+                <th>Reasoning</th>
+                <th>token_count次数</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

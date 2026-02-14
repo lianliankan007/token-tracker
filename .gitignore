@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+build/
+dist/
+
+# Local app/runtime data
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Legacy backups
+old_spec_backup.txt
