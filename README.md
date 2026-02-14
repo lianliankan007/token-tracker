@@ -69,6 +69,55 @@ dist\token-tracker.exe
 3. Use chart toggles (`Total / Input / Output`).
 4. Hover over chart points to see per-day details.
 
+### Codex Log Path Tutorial
+
+If you want to analyze Codex usage, you can add either a folder or specific `.jsonl` files:
+
+1. Open `token-tracker`.
+2. Click `Add Folder` if you want recursive scan under a directory.
+3. Or click `Add File` and select one/more Codex `.jsonl` log files.
+4. Confirm the selected paths appear in the left path list.
+5. Click `Refresh`.
+
+Suggested approach:
+
+- Prefer `Add Folder` if Codex logs are generated continuously.
+- Use `Add File` when you only want to analyze a fixed set of logs.
+
+Typical Windows locations you can check:
+
+```text
+%USERPROFILE%\.codex\
+%APPDATA%\Codex\
+```
+
+If your environment uses a custom log directory, add that directory directly.
+
+### Other Tools (Preview)
+
+`token-tracker` will support Claude Code and Cursor in future versions.
+Before official adapters land, users can still help by locating logs and sharing examples.
+
+#### Claude Code log discovery
+
+Try:
+
+1. Search recent `.jsonl` files:
+   `Get-ChildItem $env:USERPROFILE -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 50 FullName,LastWriteTime`
+2. Run Claude Code once, then repeat the command and compare newly changed files.
+3. Add candidate folders/files in `token-tracker` and test refresh.
+
+#### Cursor log discovery
+
+Try:
+
+1. Search under common app data locations:
+   `%APPDATA%`, `%LOCALAPPDATA%`, `%USERPROFILE%`
+2. Focus on folders containing `cursor`, `logs`, `jsonl`, or session traces.
+3. Re-run search after a Cursor coding session and compare recently modified files.
+
+If you confirm stable paths/fields, please open an Issue so we can add first-class adapters.
+
 ## Log Parsing (Current)
 
 Primary supported structures:
