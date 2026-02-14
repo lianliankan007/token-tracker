@@ -9,6 +9,7 @@
 
 const el = {
   pathList: document.getElementById("pathList"),
+  candidateList: document.getElementById("candidateList"),
   status: document.getElementById("status"),
   mTotal: document.getElementById("mTotal"),
   mInput: document.getElementById("mInput"),
@@ -22,6 +23,7 @@ const el = {
   showOutput: document.getElementById("showOutput"),
   sourceSelect: document.getElementById("sourceSelect"),
   btnAutoScan: document.getElementById("btnAutoScan"),
+  btnApplyCandidates: document.getElementById("btnApplyCandidates"),
   btnAddDir: document.getElementById("btnAddDir"),
   btnAddFile: document.getElementById("btnAddFile"),
   btnRemove: document.getElementById("btnRemove"),
@@ -38,6 +40,16 @@ function renderPaths(paths) {
     opt.value = p;
     opt.textContent = p;
     el.pathList.appendChild(opt);
+  }
+}
+
+function renderCandidates(candidates) {
+  el.candidateList.innerHTML = "";
+  for (const p of candidates || []) {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    el.candidateList.appendChild(opt);
   }
 }
 
@@ -218,6 +230,7 @@ function renderPayload(payload) {
   if (payload.source) {
     el.sourceSelect.value = payload.source;
   }
+  renderCandidates(payload.candidates || []);
   renderPaths(payload.paths || []);
   renderSummary(payload.totals || {});
   renderTable(state.rows);
@@ -282,7 +295,7 @@ async function onReady() {
 
   el.btnAutoScan.addEventListener("click", async () => {
     el.status.textContent = "正在自动扫描日志路径...";
-    const res = await callApi("auto_scan", el.sourceSelect.value);
+    const res = await callApi("auto_scan_candidates", el.sourceSelect.value);
     if (!res.ok) {
       el.status.textContent = res.message || "自动扫描失败";
       return;
@@ -290,8 +303,19 @@ async function onReady() {
     if (res.source) {
       el.sourceSelect.value = res.source;
     }
-    renderPaths(res.paths || []);
+    renderCandidates(res.candidates || []);
     el.status.textContent = res.message || "自动扫描完成";
+  });
+
+  el.btnApplyCandidates.addEventListener("click", async () => {
+    const selected = [...el.candidateList.selectedOptions].map((o) => o.value);
+    const res = await callApi("apply_auto_scan_selection", selected);
+    if (!res.ok) {
+      el.status.textContent = res.message || "加入目录失败";
+      return;
+    }
+    renderPaths(res.paths || []);
+    el.status.textContent = res.message || "已加入目录";
   });
 
   for (const id of ["showTotal", "showInput", "showOutput"]) {

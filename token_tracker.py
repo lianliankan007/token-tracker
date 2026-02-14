@@ -1,4 +1,5 @@
-﻿import json
+﻿import heapq
+import json
 import os
 import shutil
 import sqlite3
@@ -424,6 +425,7 @@ class WebApi:
         self.store = LocalSQLiteStore(self.db_file)
         self.source = self._load_source()
         self.paths = self._load_paths()
+        self._last_candidates: List[str] = []
         self.window: Optional[webview.Window] = None
 
     def set_window(self, window: webview.Window) -> None:
@@ -565,53 +567,81 @@ class WebApi:
 
     def _detect_source_paths(self, source: str) -> List[str]:
         home = Path.home()
-        appdata = Path(os.getenv("APPDATA", str(home)))
-        localappdata = Path(os.getenv("LOCALAPPDATA", str(home)))
-        candidates: List[Path] = []
+        roots: List[Path] = [home]
+        if sys.platform == "win32":
+            roots.append(Path(os.getenv("APPDATA", str(home))))
+            roots.append(Path(os.getenv("LOCALAPPDATA", str(home))))
+        elif sys.platform == "darwin":
+            roots.append(home / "Library" / "Application Support")
+            roots.append(home / "Library" / "Caches")
+        else:
+            roots.append(Path(os.getenv("XDG_CONFIG_HOME", str(home / ".config"))))
+            roots.append(Path(os.getenv("XDG_DATA_HOME", str(home / ".local" / "share"))))
+            roots.append(home / ".cache")
 
-        if source == "codex":
-            candidates.extend(
-                [
-                    home / ".codex",
-                    home / ".codex" / "logs",
-                    home / ".codex" / "sessions",
-                    appdata / "Codex",
-                    localappdata / "Codex",
-                    home / ".config" / "codex",
-                    home / ".cache" / "codex",
-                    home / "Library" / "Application Support" / "Codex",
-                ]
-            )
-        elif source == "claude_code":
-            candidates.extend(
-                [
-                    home / ".claude",
-                    home / ".claude" / "logs",
-                    home / ".claude" / "sessions",
-                    appdata / "Claude",
-                    localappdata / "Claude",
-                    appdata / "ClaudeCode",
-                    localappdata / "ClaudeCode",
-                    home / ".config" / "claude",
-                    home / ".cache" / "claude",
-                    home / "Library" / "Application Support" / "Claude",
-                ]
-            )
-        elif source == "cursor":
-            candidates.extend(
-                [
-                    home / ".cursor",
-                    home / ".cursor" / "logs",
-                    appdata / "Cursor",
-                    localappdata / "Cursor",
-                    home / ".config" / "Cursor",
-                    home / ".cache" / "Cursor",
-                    home / "Library" / "Application Support" / "Cursor",
-                ]
-            )
+        keywords_map = {
+            "codex": ("codex",),
+            "claude_code": ("claude", "anthropic"),
+            "cursor": ("cursor",),
+        }
+        keywords = keywords_map.get(source, ("codex",))
+        recent_files = self._scan_recent_jsonl_files(roots=roots, keywords=keywords, limit=300)
+        if not recent_files:
+            return []
 
-        existing = [str(p) for p in candidates if p.exists() and self._path_has_jsonl(p)]
-        return self._dedupe_sources(existing)
+        grouped: Dict[str, Tuple[float, int]] = {}
+        for file_path, mtime in recent_files:
+            key = str(file_path.parent)
+            latest, count = grouped.get(key, (0.0, 0))
+            grouped[key] = (max(latest, float(mtime)), count + 1)
+
+        deduped = self._dedupe_sources(list(grouped.keys()))
+        rows = [(path, grouped[path][0], grouped[path][1]) for path in deduped if path in grouped]
+        rows.sort(key=lambda x: x[1], reverse=True)
+        return [x[0] for x in rows[:50]]
+
+    @staticmethod
+    def _scan_recent_jsonl_files(
+        roots: List[Path], keywords: Tuple[str, ...], limit: int
+    ) -> List[Tuple[Path, float]]:
+        normalized_roots: List[Path] = []
+        seen_roots: set[str] = set()
+        for root in roots:
+            try:
+                resolved = root.expanduser().resolve()
+            except OSError:
+                resolved = root.expanduser()
+            key = str(resolved)
+            if key in seen_roots:
+                continue
+            seen_roots.add(key)
+            if resolved.exists():
+                normalized_roots.append(resolved)
+
+        lower_keywords = tuple(k.lower() for k in keywords)
+        heap: List[Tuple[float, str]] = []
+
+        for root in normalized_roots:
+            for current_root, _dirs, files in os.walk(root, topdown=True):
+                for name in files:
+                    if not name.lower().endswith(".jsonl"):
+                        continue
+                    full = Path(current_root) / name
+                    lower_path = str(full).lower()
+                    if lower_keywords and not any(k in lower_path for k in lower_keywords):
+                        continue
+                    try:
+                        mtime = full.stat().st_mtime
+                    except OSError:
+                        continue
+                    entry = (mtime, str(full))
+                    if len(heap) < limit:
+                        heapq.heappush(heap, entry)
+                    elif mtime > heap[0][0]:
+                        heapq.heapreplace(heap, entry)
+
+        heap.sort(key=lambda x: x[0], reverse=True)
+        return [(Path(path_str), mtime) for mtime, path_str in heap]
 
     @staticmethod
     def _rows_payload(rows: List[Tuple[str, DailyUsage]]) -> List[dict]:
@@ -633,6 +663,7 @@ class WebApi:
         return {
             "status": status,
             "source": self.source,
+            "candidates": self._last_candidates,
             "paths": self.paths,
             "totals": {
                 "total": totals_obj.total,
@@ -663,26 +694,38 @@ class WebApi:
         return {"ok": True, "source": self.source}
 
     def auto_scan(self, source: str) -> dict:
+        return self.auto_scan_candidates(source)
+
+    def auto_scan_candidates(self, source: str) -> dict:
         source_val = str(source or "codex")
         if source_val not in self.SUPPORTED_SOURCES:
             return {"ok": False, "message": "不支持的来源"}
         self.source = source_val
         detected = self._detect_source_paths(self.source)
-        self.paths = detected
+        self._last_candidates = detected
         self._save_paths()
         if not detected:
             return {
                 "ok": True,
                 "source": self.source,
-                "paths": self.paths,
+                "candidates": [],
                 "message": f"未在 {self._source_label(self.source)} 常见目录发现可用 .jsonl 日志",
             }
         return {
             "ok": True,
             "source": self.source,
-            "paths": self.paths,
-            "message": f"自动扫描完成：发现 {len(detected)} 个路径（{self._source_label(self.source)}）",
+            "candidates": detected,
+            "message": f"自动扫描完成：发现 {len(detected)} 个候选目录（{self._source_label(self.source)}）",
         }
+
+    def apply_auto_scan_selection(self, selected_paths: List[str]) -> dict:
+        selected = [str(p) for p in selected_paths if isinstance(p, str)]
+        if not selected:
+            return {"ok": False, "message": "请先选择候选目录"}
+        merged = self._dedupe_sources([*self.paths, *selected])
+        self.paths = merged
+        self._save_paths()
+        return {"ok": True, "paths": self.paths, "message": f"已加入 {len(selected)} 个目录"}
 
     def add_directory(self) -> dict:
         if self.window is None:
@@ -760,4 +803,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 

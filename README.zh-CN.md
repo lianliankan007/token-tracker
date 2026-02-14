@@ -87,11 +87,17 @@ dist/token-tracker.dmg
 ## 使用方法
 
 1. 先选择来源：`Codex` / `Claude Code` / `Cursor`。
-2. 点击 `自动扫描`，自动发现该来源的常见日志路径。
-3. （可选）用 `添加目录` / `添加文件` 补充自定义路径。
-4. 点击 `刷新统计`，开始解析并聚合。
-5. 勾选图表线条（总量/上传/下载）。
-6. 鼠标移到折线点，查看该日详细数据。
+2. 点击 `自动扫描`。
+3. 程序会做类似下面命令的递归扫描（按最近时间筛选 `.jsonl`）：
+   `Get-ChildItem $env:USERPROFILE -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 50 FullName,LastWriteTime`
+4. 扫描结果会清洗去重为“候选目录”。
+5. 在候选目录里多选，点击 `加入选中目录`。
+6. （可选）再用 `添加目录` / `添加文件` 补充自定义路径。
+7. 点击 `刷新统计`，开始解析并聚合。
+8. 勾选图表线条（总量/上传/下载）。
+9. 鼠标移到折线点，查看该日详细数据。
+
+自动扫描已适配多平台（Windows/macOS/Linux），会从各平台常见用户数据目录开始扫描。
 
 ### 来源支持状态
 

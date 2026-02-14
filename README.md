@@ -87,11 +87,17 @@ dist/token-tracker.dmg
 ## Usage
 
 1. Select source: `Codex` / `Claude Code` / `Cursor`.
-2. Click `Auto Scan` to discover common log paths for the selected source.
-3. (Optional) add extra custom paths via `Add Folder` / `Add File`.
-4. Click `Refresh` to parse and aggregate.
-5. Use chart toggles (`Total / Input / Output`).
-6. Hover over chart points to see per-day details.
+2. Click `Auto Scan`.
+3. The app performs recursive `.jsonl` discovery (similar to):
+   `Get-ChildItem $env:USERPROFILE -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 50 FullName,LastWriteTime`
+4. Scan results are cleaned and deduplicated into candidate directories.
+5. Multi-select candidate directories and click `Add Selected Directories`.
+6. (Optional) add extra custom paths via `Add Folder` / `Add File`.
+7. Click `Refresh` to parse and aggregate.
+8. Use chart toggles (`Total / Input / Output`).
+9. Hover over chart points to see per-day details.
+
+Auto scan is platform-aware (Windows/macOS/Linux) and searches each platform's common user-data roots.
 
 ### Source Support Matrix
 
