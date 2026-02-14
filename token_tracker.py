@@ -415,11 +415,14 @@ class TokenParser:
 
 
 class WebApi:
+    SUPPORTED_SOURCES = ("codex", "claude_code", "cursor")
+
     def __init__(self) -> None:
         self.config_dir = self._resolve_config_dir()
         self.config_file = self.config_dir / "config.json"
         self.db_file = self.config_dir / "tracker.db"
         self.store = LocalSQLiteStore(self.db_file)
+        self.source = self._load_source()
         self.paths = self._load_paths()
         self.window: Optional[webview.Window] = None
 
@@ -458,6 +461,24 @@ class WebApi:
         except OSError:
             normalized = str(path_obj.absolute())
         return normalized, path_obj.is_dir()
+
+    def _read_config(self) -> dict:
+        if not self.config_file.exists():
+            return {}
+        try:
+            data = json.loads(self.config_file.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+        return {}
+
+    def _load_source(self) -> str:
+        data = self._read_config()
+        source = str(data.get("source") or "codex")
+        if source in self.SUPPORTED_SOURCES:
+            return source
+        return "codex"
 
     def _dedupe_sources(self, paths: List[str]) -> List[str]:
         deduped: List[str] = []
@@ -506,26 +527,91 @@ class WebApi:
         if db_paths:
             return self._dedupe_sources(db_paths)
 
-        if not self.config_file.exists():
-            return []
-
-        try:
-            data = json.loads(self.config_file.read_text(encoding="utf-8"))
-            if isinstance(data, dict) and isinstance(data.get("paths"), list):
-                loaded = [str(p) for p in data["paths"] if isinstance(p, str)]
-                merged = self._dedupe_sources(loaded)
-                self.store.save_paths(merged)
-                return merged
-        except Exception:
-            return []
+        data = self._read_config()
+        if isinstance(data.get("paths"), list):
+            loaded = [str(p) for p in data["paths"] if isinstance(p, str)]
+            merged = self._dedupe_sources(loaded)
+            self.store.save_paths(merged)
+            return merged
 
         return []
 
     def _save_paths(self) -> None:
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self.store.save_paths(self.paths)
-        payload = {"paths": self.paths}
+        payload = {"paths": self.paths, "source": self.source}
         self.config_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    @staticmethod
+    def _source_label(source: str) -> str:
+        mapping = {
+            "codex": "Codex",
+            "claude_code": "Claude Code",
+            "cursor": "Cursor",
+        }
+        return mapping.get(source, source)
+
+    @staticmethod
+    def _path_has_jsonl(path_obj: Path) -> bool:
+        try:
+            if path_obj.is_file():
+                return path_obj.suffix.lower() == ".jsonl"
+            if path_obj.is_dir():
+                for _ in path_obj.rglob("*.jsonl"):
+                    return True
+        except OSError:
+            return False
+        return False
+
+    def _detect_source_paths(self, source: str) -> List[str]:
+        home = Path.home()
+        appdata = Path(os.getenv("APPDATA", str(home)))
+        localappdata = Path(os.getenv("LOCALAPPDATA", str(home)))
+        candidates: List[Path] = []
+
+        if source == "codex":
+            candidates.extend(
+                [
+                    home / ".codex",
+                    home / ".codex" / "logs",
+                    home / ".codex" / "sessions",
+                    appdata / "Codex",
+                    localappdata / "Codex",
+                    home / ".config" / "codex",
+                    home / ".cache" / "codex",
+                    home / "Library" / "Application Support" / "Codex",
+                ]
+            )
+        elif source == "claude_code":
+            candidates.extend(
+                [
+                    home / ".claude",
+                    home / ".claude" / "logs",
+                    home / ".claude" / "sessions",
+                    appdata / "Claude",
+                    localappdata / "Claude",
+                    appdata / "ClaudeCode",
+                    localappdata / "ClaudeCode",
+                    home / ".config" / "claude",
+                    home / ".cache" / "claude",
+                    home / "Library" / "Application Support" / "Claude",
+                ]
+            )
+        elif source == "cursor":
+            candidates.extend(
+                [
+                    home / ".cursor",
+                    home / ".cursor" / "logs",
+                    appdata / "Cursor",
+                    localappdata / "Cursor",
+                    home / ".config" / "Cursor",
+                    home / ".cache" / "Cursor",
+                    home / "Library" / "Application Support" / "Cursor",
+                ]
+            )
+
+        existing = [str(p) for p in candidates if p.exists() and self._path_has_jsonl(p)]
+        return self._dedupe_sources(existing)
 
     @staticmethod
     def _rows_payload(rows: List[Tuple[str, DailyUsage]]) -> List[dict]:
@@ -546,6 +632,7 @@ class WebApi:
         totals_obj = totals or OverallUsage()
         return {
             "status": status,
+            "source": self.source,
             "paths": self.paths,
             "totals": {
                 "total": totals_obj.total,
@@ -564,8 +651,38 @@ class WebApi:
     def initialize(self) -> dict:
         daily, totals = self.store.load_latest_scan()
         if daily is None or totals is None:
-            return self._build_payload({}, OverallUsage(), "等待刷新")
-        return self._build_payload(daily, totals, "已加载本地缓存统计")
+            return self._build_payload({}, OverallUsage(), f"等待刷新（来源: {self._source_label(self.source)}）")
+        return self._build_payload(daily, totals, f"已加载本地缓存统计（来源: {self._source_label(self.source)}）")
+
+    def set_source(self, source: str) -> dict:
+        source_val = str(source or "codex")
+        if source_val not in self.SUPPORTED_SOURCES:
+            return {"ok": False, "message": "不支持的来源"}
+        self.source = source_val
+        self._save_paths()
+        return {"ok": True, "source": self.source}
+
+    def auto_scan(self, source: str) -> dict:
+        source_val = str(source or "codex")
+        if source_val not in self.SUPPORTED_SOURCES:
+            return {"ok": False, "message": "不支持的来源"}
+        self.source = source_val
+        detected = self._detect_source_paths(self.source)
+        self.paths = detected
+        self._save_paths()
+        if not detected:
+            return {
+                "ok": True,
+                "source": self.source,
+                "paths": self.paths,
+                "message": f"未在 {self._source_label(self.source)} 常见目录发现可用 .jsonl 日志",
+            }
+        return {
+            "ok": True,
+            "source": self.source,
+            "paths": self.paths,
+            "message": f"自动扫描完成：发现 {len(detected)} 个路径（{self._source_label(self.source)}）",
+        }
 
     def add_directory(self) -> dict:
         if self.window is None:
@@ -614,7 +731,7 @@ class WebApi:
             daily, totals = parser.parse_paths(self.paths)
             self.store.save_scan_result(daily, totals)
             rows = len(daily)
-            status = f"完成：{rows} 天，扫描 {totals.files_scanned} 个文件"
+            status = f"完成：{rows} 天，扫描 {totals.files_scanned} 个文件（来源: {self._source_label(self.source)}）"
             return self._build_payload(daily, totals, status)
         except Exception as exc:
             return {"error": str(exc)}

@@ -10,6 +10,15 @@
   <div class="app-shell">
     <aside class="left-panel card">
       <h2>日志路径</h2>
+      <div class="source-row">
+        <label for="sourceSelect">来源</label>
+        <select id="sourceSelect">
+          <option value="codex">Codex</option>
+          <option value="claude_code">Claude Code</option>
+          <option value="cursor">Cursor</option>
+        </select>
+        <button id="btnAutoScan">自动扫描</button>
+      </div>
       <div class="path-actions">
         <button id="btnAddDir">添加目录</button>
         <button id="btnAddFile">添加文件</button>

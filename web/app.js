@@ -20,6 +20,8 @@ const el = {
   showTotal: document.getElementById("showTotal"),
   showInput: document.getElementById("showInput"),
   showOutput: document.getElementById("showOutput"),
+  sourceSelect: document.getElementById("sourceSelect"),
+  btnAutoScan: document.getElementById("btnAutoScan"),
   btnAddDir: document.getElementById("btnAddDir"),
   btnAddFile: document.getElementById("btnAddFile"),
   btnRemove: document.getElementById("btnRemove"),
@@ -213,6 +215,9 @@ function renderPayload(payload) {
   }
 
   state.rows = payload.rows || [];
+  if (payload.source) {
+    el.sourceSelect.value = payload.source;
+  }
   renderPaths(payload.paths || []);
   renderSummary(payload.totals || {});
   renderTable(state.rows);
@@ -264,6 +269,29 @@ async function onReady() {
     el.status.textContent = "正在解析日志...";
     const res = await callApi("refresh_data");
     renderPayload(res);
+  });
+
+  el.sourceSelect.addEventListener("change", async () => {
+    const res = await callApi("set_source", el.sourceSelect.value);
+    if (!res.ok) {
+      el.status.textContent = res.message || "来源设置失败";
+      return;
+    }
+    el.status.textContent = "已切换来源";
+  });
+
+  el.btnAutoScan.addEventListener("click", async () => {
+    el.status.textContent = "正在自动扫描日志路径...";
+    const res = await callApi("auto_scan", el.sourceSelect.value);
+    if (!res.ok) {
+      el.status.textContent = res.message || "自动扫描失败";
+      return;
+    }
+    if (res.source) {
+      el.sourceSelect.value = res.source;
+    }
+    renderPaths(res.paths || []);
+    el.status.textContent = res.message || "自动扫描完成";
   });
 
   for (const id of ["showTotal", "showInput", "showOutput"]) {

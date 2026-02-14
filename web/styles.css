@@ -50,6 +50,25 @@ body {
   gap: 8px;
 }
 
+.source-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.source-row label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.source-row select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: #fff;
+}
+
 button {
   border: 1px solid #b9c7da;
   background: #fff;

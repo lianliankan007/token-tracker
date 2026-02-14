@@ -86,10 +86,20 @@ dist/token-tracker.dmg
 
 ## Usage
 
-1. Add log paths (`Add Folder` / `Add File`).
-2. Click `Refresh` to parse and aggregate.
-3. Use chart toggles (`Total / Input / Output`).
-4. Hover over chart points to see per-day details.
+1. Select source: `Codex` / `Claude Code` / `Cursor`.
+2. Click `Auto Scan` to discover common log paths for the selected source.
+3. (Optional) add extra custom paths via `Add Folder` / `Add File`.
+4. Click `Refresh` to parse and aggregate.
+5. Use chart toggles (`Total / Input / Output`).
+6. Hover over chart points to see per-day details.
+
+### Source Support Matrix
+
+| Source | Auto scan | Parser support | Status |
+|---|---|---|---|
+| Codex | Yes | Yes | Stable |
+| Claude Code | Yes (best effort) | Partial (common fields) | Beta |
+| Cursor | Yes (best effort) | Partial (common fields) | Beta |
 
 ### Codex Log Path Tutorial
 
