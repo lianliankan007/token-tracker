@@ -1,8 +1,8 @@
 ﻿# token-tracker
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Release](https://img.shields.io/github/v/release/YOUR_GITHUB_USERNAME/token-tracker?display_name=tag)](https://github.com/YOUR_GITHUB_USERNAME/token-tracker/releases)
-[![License](https://img.shields.io/badge/License-Unspecified-lightgrey)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/lianliankan007/token-tracker?display_name=tag)](https://github.com/lianliankan007/token-tracker/releases)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 
 语言: [English](./README.md) | 简体中文
@@ -171,8 +171,8 @@ dist\token-tracker.exe
 
 ## 开源发布提示
 
-- 发布到 GitHub 后，将徽章中的 `YOUR_GITHUB_USERNAME/token-tracker` 改为你的真实仓库。
-- 建议补充 `LICENSE` 文件，让许可证徽章生效。
+- Release 发布页：`https://github.com/lianliankan007/token-tracker/releases`
+- 许可证：`MIT`
 
 ## 贡献
 

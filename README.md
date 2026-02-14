@@ -1,8 +1,8 @@
 ﻿# token-tracker
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Release](https://img.shields.io/github/v/release/YOUR_GITHUB_USERNAME/token-tracker?display_name=tag)](https://github.com/YOUR_GITHUB_USERNAME/token-tracker/releases)
-[![License](https://img.shields.io/badge/License-Unspecified-lightgrey)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/lianliankan007/token-tracker?display_name=tag)](https://github.com/lianliankan007/token-tracker/releases)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 
 Language: English | [简体中文](./README.zh-CN.md)
@@ -155,8 +155,8 @@ Files:
 
 ## Open Source Notes
 
-- Replace badge repo path `YOUR_GITHUB_USERNAME/token-tracker` with your real repo after publishing.
-- Add a `LICENSE` file to make the license badge actionable.
+- Releases are published at: `https://github.com/lianliankan007/token-tracker/releases`
+- License: `MIT`
 
 ## Contributing
 
