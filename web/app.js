@@ -30,6 +30,7 @@ const el = {
   btnRemove: document.getElementById("btnRemove"),
   btnClear: document.getElementById("btnClear"),
   btnRefresh: document.getElementById("btnRefresh"),
+  selectionCopyBtn: document.getElementById("selectionCopyBtn"),
 };
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-US");
@@ -262,6 +263,16 @@ function syncVisibleFromUI() {
   state.visible.output = el.showOutput.checked;
 }
 
+function hideSelectionCopyBtn() {
+  el.selectionCopyBtn.style.display = "none";
+}
+
+function showSelectionCopyBtn(x, y) {
+  el.selectionCopyBtn.style.left = `${x}px`;
+  el.selectionCopyBtn.style.top = `${y}px`;
+  el.selectionCopyBtn.style.display = "block";
+}
+
 async function onReady() {
   syncVisibleFromUI();
   const init = await callApi("initialize");
@@ -351,6 +362,34 @@ async function onReady() {
     } catch (_err) {
       // Ignore clipboard failures; manual selected-text copy still works.
     }
+  });
+
+  document.addEventListener("mouseup", (evt) => {
+    const selection = window.getSelection ? String(window.getSelection()).trim() : "";
+    if (!selection) {
+      hideSelectionCopyBtn();
+      return;
+    }
+    const x = Math.min(window.innerWidth - 100, Math.max(8, evt.clientX + 10));
+    const y = Math.min(window.innerHeight - 36, Math.max(8, evt.clientY + 10));
+    showSelectionCopyBtn(x, y);
+  });
+
+  document.addEventListener("scroll", hideSelectionCopyBtn, true);
+
+  el.selectionCopyBtn.addEventListener("click", async () => {
+    const selection = window.getSelection ? String(window.getSelection()).trim() : "";
+    if (!selection) {
+      hideSelectionCopyBtn();
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(selection);
+      el.status.textContent = "已复制选中文本";
+    } catch (_err) {
+      // Ignore clipboard failures.
+    }
+    hideSelectionCopyBtn();
   });
 }
 
