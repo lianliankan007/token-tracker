@@ -1,5 +1,6 @@
 ﻿const state = {
   rows: [],
+  selectedRowText: "",
   visible: {
     total: false,
     input: true,
@@ -62,8 +63,10 @@ function renderSummary(totals = {}) {
 
 function renderTable(rows) {
   el.tbody.innerHTML = "";
+  state.selectedRowText = "";
   for (const r of rows) {
     const tr = document.createElement("tr");
+    tr.tabIndex = 0;
     const cells = [
       r.day,
       fmt(r.total),
@@ -78,6 +81,14 @@ function renderTable(rows) {
       td.textContent = c;
       tr.appendChild(td);
     }
+    const rowText = cells.join("\t");
+    tr.addEventListener("click", () => {
+      for (const item of el.tbody.querySelectorAll("tr")) {
+        item.classList.remove("selected-copy");
+      }
+      tr.classList.add("selected-copy");
+      state.selectedRowText = rowText;
+    });
     el.tbody.appendChild(tr);
   }
 }
@@ -326,6 +337,21 @@ async function onReady() {
   }
 
   el.chartSvg.addEventListener("mouseleave", hideTooltip);
+
+  document.addEventListener("keydown", async (evt) => {
+    const isCopy = (evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === "c";
+    if (!isCopy) return;
+    const selection = window.getSelection ? String(window.getSelection()) : "";
+    if (selection && selection.trim()) return;
+    if (!state.selectedRowText) return;
+    try {
+      await navigator.clipboard.writeText(state.selectedRowText);
+      el.status.textContent = "已复制选中行";
+      evt.preventDefault();
+    } catch (_err) {
+      // Ignore clipboard failures; manual selected-text copy still works.
+    }
+  });
 }
 
 window.addEventListener("pywebviewready", onReady);
